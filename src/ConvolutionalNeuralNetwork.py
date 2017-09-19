@@ -20,6 +20,7 @@ depth = 16
 num_hidden = 64
 num_steps = 1001
 graph = tf.Graph()
+test = 0
 
 def unpickle(pickle_file):
     try:
@@ -48,13 +49,12 @@ print('Validation set', valid_dataset.shape, valid_labels.shape)
 print('Test set', test_dataset.shape, test_labels.shape)
 
 with graph.as_default():
-
-  # Input data.
   tf_train_dataset = tf.placeholder(
     tf.float32, shape=(batch_size, image_size, image_size, num_channels))
   tf_train_labels = tf.placeholder(tf.float32, shape=(batch_size, num_labels))
   tf_valid_dataset = tf.constant(valid_dataset)
   tf_test_dataset = tf.constant(test_dataset)
+  test_var = tf.Variable(test)
 
   # Variables.
   layer1_weights = tf.Variable(tf.truncated_normal(
@@ -98,13 +98,15 @@ with tf.Session(graph=graph) as session:
   tf.initialize_all_variables().run()
   print('Initialized')
   for step in range(num_steps):
+    test = step*2
     offset = (step * batch_size) % (train_labels.shape[0] - batch_size)
     batch_data = train_dataset[offset:(offset + batch_size), :, :, :]
     batch_labels = train_labels[offset:(offset + batch_size), :]
     feed_dict = {tf_train_dataset : batch_data, tf_train_labels : batch_labels}
-    _, l, predictions = session.run(
+    _, l, predictions, idk = session.run(
       [optimizer, loss, train_prediction], feed_dict=feed_dict)
     if (step % 50 == 0):
+        #print('Test: %f' % (test_var))
         print('Minibatch loss at step %d: %f' % (step, l))
         print('Minibatch accuracy: %.1f%%' % accuracy(predictions, batch_labels))
         print('Validation accuracy: %.1f%%' % accuracy(valid_prediction.eval(), valid_labels))

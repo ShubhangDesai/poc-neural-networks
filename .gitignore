@@ -1,0 +1,5 @@
+*.pickle
+*.gz
+.idea/
+*.zip
+src/notMNIST*
